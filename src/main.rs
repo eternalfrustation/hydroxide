@@ -600,7 +600,7 @@ async fn main() {
         .unwrap();
     sqlx::query(
         "
-CREATE TABLE users (
+CREATE TABLE users if not exists (
 	salt blob unique not null,
 	name text not null,
 	username text unique not null primary key,
@@ -613,7 +613,7 @@ CREATE TABLE users (
     .await
     .unwrap();
     sqlx::query(
-        "CREATE TABLE posts (
+        "CREATE TABLE posts if not exists (
 id integer primary key autoincrement,
 title text not null,
 body text not null,
