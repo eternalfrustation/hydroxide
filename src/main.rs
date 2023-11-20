@@ -607,7 +607,7 @@ CREATE TABLE if not exists users (
 	profile_pic text,
 	sh_pass blob not null,
 	email text not null unique
-) STRICT)",
+) STRICT",
     )
     .execute(&pool)
     .await
