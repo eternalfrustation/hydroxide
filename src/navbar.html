@@ -1,0 +1,6 @@
+<nav>
+<img src="/logo.svg">
+{%- for page in routes %}
+<a href={{page.link}}>{{page.name}}</a>
+{%- endfor %}
+</nav>

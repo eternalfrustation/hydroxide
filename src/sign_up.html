@@ -1,0 +1,37 @@
+<html>
+
+<head>
+  <title>
+    Hydroxide | Sign In
+  </title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/javascript.js" defer>
+  </script>
+</head>
+
+<body>
+
+  <nav></nav>
+  {% if user %}
+  <h2>
+    {{ user.name }}, You are already logged in. You shouldn't be here.
+  </h2>
+  {% else %}
+  <h2> Sign Up </h2>
+  <form id="signup_form" method="POST" action="/api/sign_up">
+    <label for="name">Name</label>
+    <input id="name" name="name">
+    <label for="username">Username</label>
+    <input id="username" name="username">
+    <label for="pass">Password</label>
+    <input id="pass" type="password" name="pass">
+    <label for="email">E-Mail</label>
+    <input id="email" type="email" name="email">
+    <button type="submit">Submit</button>
+  </form>
+  {% endif %}
+</body>
+<script>
+</script>
+
+</html>
