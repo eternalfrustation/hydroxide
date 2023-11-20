@@ -16,6 +16,7 @@
 // v0 by Vercel.
 // https://v0.dev/t/jqMbkvU2Gh7
 -->
+  {% if user %}
   <div class="mx-auto max-w-4xl space-y-8">
     <div class="space-y-4 text-center">
       <h1 class="text-6xl font-bold">Create a Blog Entry</h1>
@@ -45,5 +46,8 @@
     </button>
     </form>
   </div>
+  {% else %}
+  You are not logged in
+  {% endif %}
 
 </html>
