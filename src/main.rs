@@ -75,6 +75,9 @@ static TEMPLATES: Lazy<upon::Engine<'static>> = Lazy::new(|| {
     templates
         .add_template("create_post", include_str!("create_post.html"))
         .unwrap();
+    templates
+        .add_template("navbar", include_str!("navbar.html"))
+        .unwrap();
     templates.add_filter("brief", |s: String| {
         let mut s1 = s.clone();
         s1.truncate(100);
@@ -548,7 +551,6 @@ async fn index_serve(
     cookie_jar: CookieJar,
     user: Option<User>,
 ) -> Result<Html<String>, (StatusCode, Html<String>)> {
-    let token = cookie_jar.get("jwt-token");
     match TEMPLATES
         .template("index")
         .render(&state.get_page_state(user).await)
@@ -600,27 +602,27 @@ async fn main() {
         .unwrap();
     sqlx::query(
         "
-CREATE TABLE if not exists users (
-	salt blob unique not null,
-	name text not null,
-	username text unique not null primary key,
-	profile_pic text,
-	sh_pass blob not null,
-	email text not null unique
-) STRICT",
+            CREATE TABLE if not exists users (
+            	salt blob unique not null,
+            	name text not null,
+            	username text unique not null primary key,
+            	profile_pic text,
+            	sh_pass blob not null,
+            	email text not null unique
+            ) STRICT",
     )
     .execute(&pool)
     .await
     .unwrap();
     sqlx::query(
         "CREATE TABLE if not exists posts (
-id integer primary key autoincrement,
-title text not null,
-body text not null,
-writer_username text not null,
-post_time integer not null,
-FOREIGN KEY(writer_username) REFERENCES users(username)
-) STRICT",
+            id integer primary key autoincrement,
+            title text not null,
+            body text not null,
+            writer_username text not null,
+            post_time integer not null,
+            FOREIGN KEY(writer_username) REFERENCES users(username)
+            ) STRICT",
     )
     .execute(&pool)
     .await
