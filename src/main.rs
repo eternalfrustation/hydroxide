@@ -1,5 +1,4 @@
-#![feature(async_closure)]
-
+use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
 use base64::{engine::general_purpose, Engine as _};
 use comrak::{plugins::syntect, Plugins};
 use rand::random;
@@ -8,8 +7,6 @@ use std::{
     time::{Duration, SystemTime},
 };
 use upon::value;
-
-use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
 
 use tower_http::services::ServeDir;
 
@@ -601,6 +598,33 @@ async fn main() {
         .connect("sqlite:data.db")
         .await
         .unwrap();
+    sqlx::query(
+        "
+CREATE TABLE users (
+	salt blob unique not null,
+	name text not null,
+	username text unique not null primary key,
+	profile_pic text,
+	sh_pass blob not null,
+	email text not null unique
+) STRICT)",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "CREATE TABLE posts (
+id integer primary key autoincrement,
+title text not null,
+body text not null,
+writer_username text not null,
+post_time integer not null,
+FOREIGN KEY(writer_username) REFERENCES users(username)
+) STRICT",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
     let state = AppState {
         top_posters: <[User; 10]>::default(),
         db: pool,

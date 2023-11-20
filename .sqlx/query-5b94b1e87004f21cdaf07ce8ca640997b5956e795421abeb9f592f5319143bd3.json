@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "select * from posts where id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "body",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "writer_username",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "post_time",
+        "ordinal": 4,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5b94b1e87004f21cdaf07ce8ca640997b5956e795421abeb9f592f5319143bd3"
+}

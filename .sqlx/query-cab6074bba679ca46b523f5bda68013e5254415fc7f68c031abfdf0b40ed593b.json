@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "select title, body, post_time, writer_username, id from posts order by id desc limit 10",
+  "describe": {
+    "columns": [
+      {
+        "name": "title",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "body",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "post_time",
+        "ordinal": 2,
+        "type_info": "Int64"
+      },
+      {
+        "name": "writer_username",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "id",
+        "ordinal": 4,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "cab6074bba679ca46b523f5bda68013e5254415fc7f68c031abfdf0b40ed593b"
+}

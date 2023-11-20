@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "select * from users where username = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "salt",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "profile_pic",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "sh_pass",
+        "ordinal": 4,
+        "type_info": "Blob"
+      },
+      {
+        "name": "email",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "d34dd64d2bc3327cdc76f7882849dd7f94d402c8b7f1aa6ae1674487d6ff746d"
+}
