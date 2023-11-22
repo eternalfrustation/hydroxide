@@ -53,7 +53,7 @@ impl Keys {
 
 static KEYS: Lazy<Keys> = Lazy::new(|| {
     let secret = std::env::var("JWT_SECRET")
-        .expect("JWT_SCRET Environment Vaiable not set, it must be set.");
+        .expect("JWT_SECRET Environment Vaiable not set, it must be set.");
     Keys::new(secret.as_bytes())
 });
 
@@ -528,7 +528,7 @@ async fn sign_up(
     match sqlx::query!("insert into users (name, username, profile_pic, salt, sh_pass, email) values($1, $2, $3, $4, $5, $6)", user.name, user.username, user.profile_pic, user.salt, user.sh_pass, user.email).execute(&state.db).await {
         Err(e) => {
             log::error!("{:?}", e);
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Could not Sign Up")));
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Could not Sign Up") + e.to_string().as_str()));
         }
         Ok(r) => {
             log::info!("{:?}", r);
