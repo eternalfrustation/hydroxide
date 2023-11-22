@@ -57,6 +57,13 @@ static KEYS: Lazy<Keys> = Lazy::new(|| {
     Keys::new(secret.as_bytes())
 });
 
+static PORT: Lazy<u16> = Lazy::new(|| {
+    std::env::var("PORT")
+        .unwrap_or("80".to_string())
+        .parse()
+        .unwrap_or(80)
+});
+
 // Templates for the static pages
 static TEMPLATES: Lazy<upon::Engine<'static>> = Lazy::new(|| {
     let mut templates = upon::Engine::new();
@@ -632,7 +639,9 @@ async fn main() {
         db: pool,
     };
     let app = setup_routes().with_state(state);
-    let addr = SocketAddr::from(([127, 0, 0, 1], 9070));
+    let port = PORT.clone();
+    log::info!("Using port: {}", port);
+    let addr = SocketAddr::from(([127, 0, 0, 1], port));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
