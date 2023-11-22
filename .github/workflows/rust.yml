@@ -24,7 +24,7 @@ jobs:
         if [[ "${{ github.event_name }}" != "push" ]]; then
           tag=v$(date +%Y%m%d.%H%M%S)
         else
-          tag=(echo $GITHUB_SHA | cut --characters=-10)
+          tag=$(echo $GITHUB_SHA | cut --characters=-10)
         fi
         echo "tag=$tag" >> $GITHUB_OUTPUT
     - name: Publish Release Build
