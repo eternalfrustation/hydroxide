@@ -25,3 +25,7 @@ tokio-stream = { version = "0.1.14", features = ["full"] }
 upon = "0.8.0"
 tower-http = { version = "0.4.4", features = ["fs"] }
 axum_typed_multipart = "0.10.1"
+
+[profile.release]
+lto = true
+strip = true
