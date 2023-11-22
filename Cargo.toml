@@ -28,3 +28,4 @@ axum_typed_multipart = "0.10.1"
 
 [profile.release]
 strip = true
+lto = true
