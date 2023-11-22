@@ -641,7 +641,7 @@ async fn main() {
     let app = setup_routes().with_state(state);
     let port = PORT.clone();
     log::info!("Using port: {}", port);
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
