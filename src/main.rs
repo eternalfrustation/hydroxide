@@ -675,12 +675,8 @@ async fn main() {
     );
     // configure certificate and private key used by https
     let config = RustlsConfig::from_pem_file(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("cert.pem"),
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("key.pem"),
+        PathBuf::from("./").join("certs").join("cert.pem"),
+        PathBuf::from("./").join("certs").join("key.pem"),
     )
     .await
     .unwrap();
