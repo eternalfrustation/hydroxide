@@ -1,9 +1,11 @@
-use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
+use axum_typed_multipart::TryFromMultipart;
+use axum_typed_multipart::TypedMultipart;
 use base64::{engine::general_purpose, Engine as _};
 use comrak::{plugins::syntect, Plugins};
 use rand::random;
 use std::{
     net::SocketAddr,
+    path::PathBuf,
     time::{Duration, SystemTime},
 };
 use upon::value;
@@ -14,16 +16,19 @@ use tokio_stream::StreamExt;
 
 use axum::{
     async_trait,
-    extract::{FromRequestParts, Path, Query, State},
-    http::{request::Parts, StatusCode},
+    extract::{FromRequestParts, Host, Path, Query, State},
+    handler::HandlerWithoutStateExt,
+    http::{request::Parts, StatusCode, Uri},
     response::{Html, Redirect},
     routing::{get, post},
-    Form, Router,
+    BoxError, Form, Router,
 };
 use axum_extra::extract::{
     cookie::{Cookie, SameSite},
     CookieJar,
 };
+
+use axum_server::tls_rustls::RustlsConfig;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -57,11 +62,36 @@ static KEYS: Lazy<Keys> = Lazy::new(|| {
     Keys::new(secret.as_bytes())
 });
 
-static PORT: Lazy<u16> = Lazy::new(|| {
-    std::env::var("PORT")
-        .unwrap_or("80".to_string())
-        .parse()
-        .unwrap_or(80)
+static PORT: Lazy<Ports> = Lazy::new(|| Ports {
+    http: match std::env::var("PORT") {
+        Ok(port) => match port.parse() {
+            Ok(port) => port,
+            Err(e) => {
+                log::warn!("Invalid PORT environment variable {}, {:?}", port, e);
+                80
+            }
+        },
+        Err(e) => {
+            log::warn!("PORT Variable not set, using default port config {:?}", e);
+            80
+        }
+    },
+    https: match std::env::var("PORT_SSL") {
+        Ok(port) => match port.parse() {
+            Ok(port) => port,
+            Err(e) => {
+                log::warn!("Invalid PORT_SSL environment variable {}, {:?}", port, e);
+                443
+            }
+        },
+        Err(e) => {
+            log::warn!(
+                "PORT_SSL Variable not set, using default port config {:?}",
+                e
+            );
+            443
+        }
+    },
 });
 
 // Templates for the static pages
@@ -491,7 +521,7 @@ async fn sign_in(
                         Cookie::build("jwt-token", s)
                             .http_only(true)
                             .secure(true)
-                            .same_site(SameSite::None)
+                            .same_site(SameSite::Lax)
                             .max_age(Duration::from_secs(60 * 60 * 12).try_into().unwrap())
                             .path("/")
                             .finish(),
@@ -639,11 +669,76 @@ async fn main() {
         db: pool,
     };
     let app = setup_routes().with_state(state);
-    let port = PORT.clone();
-    log::info!("Using port: {}", port);
-    let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    axum::Server::bind(&addr)
+    log::info!(
+        "Using http port: {} and https port {}",
+        PORT.http,
+        PORT.https
+    );
+    // configure certificate and private key used by https
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("certs")
+            .join("cert.pem"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("certs")
+            .join("key.pem"),
+    )
+    .await
+    .unwrap();
+    tokio::spawn(redirect_http_to_https(PORT.clone()));
+    let addr = SocketAddr::from(([0, 0, 0, 0], PORT.https));
+    axum_server::bind_rustls(addr, config)
         .serve(app.into_make_service())
         .await
-        .unwrap()
+        .unwrap();
+}
+
+#[derive(Clone, Copy)]
+struct Ports {
+    http: u16,
+    https: u16,
+}
+
+impl Default for Ports {
+    fn default() -> Self {
+        Self {
+            http: 80,
+            https: 443,
+        }
+    }
+}
+
+async fn redirect_http_to_https(ports: Ports) {
+    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
+        let mut parts = uri.into_parts();
+
+        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+
+        if parts.path_and_query.is_none() {
+            parts.path_and_query = Some("/".parse().unwrap());
+        }
+
+        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
+        parts.authority = Some(https_host.parse()?);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    let redirect = move |Host(host): Host, uri: Uri| async move {
+        match make_https(host, uri, ports) {
+            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
+            Err(error) => {
+                log::warn!("failed to convert URI to HTTPS, {:?}", error);
+                Err(StatusCode::BAD_REQUEST)
+            }
+        }
+    };
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    log::debug!("http redirect listening on {}", addr);
+
+    axum::Server::bind(&addr)
+        .serve(redirect.into_make_service())
+        .await
+        .unwrap();
 }

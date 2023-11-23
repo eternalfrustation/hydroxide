@@ -3,4 +3,5 @@ data.db
 Cargo.lock
 table.sqlx
 tailwindcss-linux-x64
+/certs
 
