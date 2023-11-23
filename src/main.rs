@@ -176,11 +176,11 @@ impl FromRequestParts<AppState> for User {
         match parts.headers.get("Cookie") {
             Some(cookie_string) => match Cookie::split_parse(match cookie_string.to_str() {
                 Ok(s) => s,
-                Err(e) => return Err((StatusCode::BAD_REQUEST, "Invalid Cookies")),
+                Err(_) => return Err((StatusCode::BAD_REQUEST, "Invalid Cookies")),
             })
             .map(|cookie| match cookie {
                 Ok(c) => Some(c),
-                Err(e) => None,
+                Err(_) => None,
             })
             .filter(|c| c.is_some())
             .map(|c| c.unwrap())
@@ -585,7 +585,6 @@ async fn sign_up(
 #[axum::debug_handler]
 async fn index_serve(
     State(state): State<AppState>,
-    cookie_jar: CookieJar,
     user: Option<User>,
 ) -> Result<Html<String>, (StatusCode, Html<String>)> {
     match TEMPLATES
